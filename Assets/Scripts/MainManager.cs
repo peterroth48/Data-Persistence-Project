@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,9 +12,12 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
-    public Text BestScoreText;
+    public TextMeshProUGUI bestScoreText;
     public GameObject GameOverText;
+
     private string playerName;
+    public int highScore;
+    public string highScoreName;
     
     private bool m_Started = false;
     private int m_Points;
@@ -40,6 +44,25 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        if (GameDataManager.Instance.highScore != 0)
+        {
+            highScoreName = GameDataManager.Instance.highScoreName;
+            highScore = GameDataManager.Instance.highScore;
+            bestScoreText.text = "High Score: " + highScoreName + ": " + highScore;
+
+        }
+
+        else
+        {
+            highScoreName = playerName;
+            highScore = 0;
+            GameDataManager.Instance.highScoreName = playerName;
+            GameDataManager.Instance.highScore = 0;
+            bestScoreText.text = "High Score: " + highScoreName + ": " + highScore;
+        }
+    
+
     }
 
     private void Update()
@@ -64,17 +87,29 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+
+        if (m_Points > highScore)
+        {
+            highScore = m_Points;
+            highScoreName = playerName;
+
+        }
+
+        ScoreText.text = $"{playerName} Score : {m_Points}";
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"{playerName} Score : {m_Points}";
+        
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        GameDataManager.Instance.highScore = highScore;
+        GameDataManager.Instance.highScoreName = highScoreName;
+        GameDataManager.Instance.SaveHighScore();
     }
 }
